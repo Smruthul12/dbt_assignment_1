@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: ecommerce  # This must match the schema in Snowflake
+    database: Retail_Analytics_dbt  # Your Snowflake database name (check your profile)
+    schema: ecommerce  # Your Snowflake schema name
+    tables:
+      - name: raw_retail_data  # Must match the actual table name in Snowflake
