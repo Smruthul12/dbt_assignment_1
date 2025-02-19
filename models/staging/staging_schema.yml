@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: raw_retail
+    description: The raw_retail model is a transformation of the raw_retail_data table from the ecommerce schema of the Retail_Analytics_dbt database.
+    columns:
+      - name: invoiceno
+        description: The unique identifier for each invoice in the retail dataset. This is a varchar field.
+
+      - name: stockcode
+        description: The unique identifier for each product in the retail store.
+ 
+      - name: description
+        description: This column contains the description of the retail product.
+ 
+      - name: quantity
+        description: This column represents the quantity of a particular product in a specific invoice. It is a numeric field.
+
+      - name: invoicedate
+        description: The timestamp of when the invoice was created. The data type is timestamp_ntz, which means it's a timestamp with no timezone.
+
+      - name: unitprice_str
+        description: This column represents the unit price of each product in the retail store. The data type is float, which means it can contain decimal values. The values in this column are derived from the 'UnitPrice' column in the 'raw_retail' table.
+
+      - name: customerid
+        description: The unique identifier for each customer in the retail database.
+
+      - name: country
+        description: The country where the customer resides.
+

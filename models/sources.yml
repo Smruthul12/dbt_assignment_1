@@ -1,8 +1,39 @@
 version: 2
 
 sources:
-  - name: ecommerce  # This must match the schema in Snowflake
-    database: Retail_Analytics_dbt  # Your Snowflake database name (check your profile)
-    schema: ecommerce  # Your Snowflake schema name
+  - name: ecommerce
+    description: "Source schema containing raw e-commerce transactional data."
+    database: Retail_Analytics_dbt
+    schema: ecommerce
     tables:
-      - name: raw_retail_data  # Must match the actual table name in Snowflake
+      - name: raw_retail_data
+        description: "Raw transactional data from the e-commerce platform, including customer purchases and order details."
+        columns:
+          - name: InvoiceNo
+            description: "Unique invoice number assigned to each transaction."
+            tests:
+              - unique
+              - not_null
+
+          - name: StockCode
+            description: "Unique identifier for each product in the inventory."
+
+          - name: Description
+            description: "Brief description of the purchased product."
+
+          - name: Quantity
+            description: "Number of units purchased in the transaction."
+
+          - name: InvoiceDate
+            description: "Date and time when the transaction was recorded."
+
+          - name: UnitPrice
+            description: "Price per unit of the product at the time of purchase."
+
+          - name: CustomerID
+            description: "Unique identifier assigned to each customer."
+            tests:
+              - not_null
+
+          - name: Country
+            description: "Country where the transaction occurred."

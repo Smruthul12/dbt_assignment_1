@@ -1,0 +1,56 @@
+models:
+  - name: retail_cleansed
+    description: "The 'retail_cleansed' model is a transformation of the 'raw_retail' table from the 'Retail_Analytics_dbt.DEV' database. It includes the following columns: 'InvoiceNo', 'StockCode', 'Description', 'Quantity', 'InvoiceDate', 'UnitPrice', 'CustomerID', and 'Country'. The 'Description' and 'Country' columns are transformed to upper case and trimmed of any leading or trailing spaces. The 'InvoiceDate' is cast to a date format and 'UnitPrice_str' is cast to a float format and renamed to 'UnitPrice'. The model filters out records where 'CustomerID' is null and 'Quantity' is less than or equal to zero."
+    columns:
+      - name: invoiceno
+        description: The unique identifier for each invoice in the retail dataset. It is a string data type.
+        data_type: varchar
+        tests:
+          - not_null
+          - unique
+
+      - name: stockcode
+        description: The unique identifier for each distinct product in the retail store.
+        data_type: varchar
+        tests:
+          - not_null
+
+      - name: description
+        description: This column contains the description of the retail product. The data is transformed to uppercase and any leading or trailing spaces are removed.
+        data_type: varchar
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: "^[A-Za-z0-9 ]+$"
+
+      - name: quantity
+        description: This column represents the quantity of the product purchased in each transaction. It is a numeric field and only includes positive values as per the SQL logic, meaning any returned or cancelled orders are excluded.
+        data_type: number
+        tests:
+          - not_null
+
+      - name: invoicedate
+        description: The date when the invoice was issued. The data type is date and it is cast from the raw data to ensure the correct format.
+        data_type: date
+        tests:
+          - not_null
+
+      - name: unitprice
+        description: The unit price of the product. This is a float value that is derived from the 'UnitPrice_str' column in the 'raw_retail' table. The value is cast to a float from a string.
+        data_type: float
+        tests:
+          - not_null
+
+      - name: customerid
+        description: The unique identifier for each customer. This field is not null in the retail_cleansed model.
+        data_type: varchar
+        tests:
+          - not_null
+
+      - name: country
+        description: The country where the customer resides. This field is transformed to uppercase and any leading or trailing spaces are removed.
+        data_type: varchar
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: "^[A-Z ]+$" 
