@@ -5,11 +5,25 @@ models:
       - name: customerid
         description: A unique identifier for each customer in the retail database.
         data_type: varchar
+        tests:
+          - unique
+          - not_null
 
       - name: total_spent
         description: This column represents the total amount spent by a customer. It is calculated by multiplying the quantity of items purchased by the unit price of each item, and then summing up these values for each customer. The data type of this column is float.
         data_type: float
-        
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0 
+
       - name: customer_segment
         description: This column categorizes customers into three segments based on their total spend. 'High-Value' for customers who have spent more than 30000, 'Medium-Value' for customers who have spent between 10000 and 30000, and 'Low-Value' for customers who have spent less than 10000.
         data_type: varchar
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - Low-Value
+                - High-Value
+                - Medium-Value

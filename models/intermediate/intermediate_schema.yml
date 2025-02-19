@@ -28,6 +28,7 @@ models:
         data_type: number
         tests:
           - not_null
+          - positive_values      
 
       - name: invoicedate
         description: The date when the invoice was issued. The data type is date and it is cast from the raw data to ensure the correct format.
@@ -40,6 +41,7 @@ models:
         data_type: float
         tests:
           - not_null
+          - positive_values
 
       - name: customerid
         description: The unique identifier for each customer. This field is not null in the retail_cleansed model.

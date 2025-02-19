@@ -11,9 +11,6 @@ sources:
         columns:
           - name: InvoiceNo
             description: "Unique invoice number assigned to each transaction."
-            tests:
-              - unique
-              - not_null
 
           - name: StockCode
             description: "Unique identifier for each product in the inventory."
@@ -32,8 +29,6 @@ sources:
 
           - name: CustomerID
             description: "Unique identifier assigned to each customer."
-            tests:
-              - not_null
 
           - name: Country
             description: "Country where the transaction occurred."
