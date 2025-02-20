@@ -15,10 +15,43 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
-              min_value: 0 
+              min_value: 0
 
       - name: customer_segment
         description: This column categorizes customers into three segments based on their total spend. 'High-Value' for customers who have spent more than 30000, 'Medium-Value' for customers who have spent between 10000 and 30000, and 'Low-Value' for customers who have spent less than 10000.
+        data_type: varchar
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - Low-Value
+                - High-Value
+                - Medium-Value
+
+  - name: customer_details
+    description: "The 'customer_details' model is a transformation of the 'retail_cleansed' and 'customer_segmentation' sources. It aggregates the latest purchase date for each customer and joins this with their respective customer segment. The model includes the following columns: 'CustomerID', 'Country', 'last_purchase_date', and 'customer_segment'. The 'CustomerID' column is used as a unique identifier for each customer. The 'Country' column represents the country where the customer is located. The 'last_purchase_date' column represents the most recent date the customer made a purchase. The 'customer_segment' column represents the segment the customer belongs to based on their purchasing behavior."
+    columns:
+      - name: customerid
+        description: This column represents the unique identifier for each customer in the retail database. It is a VARCHAR type and is used to join the retail_cleansed and customer_segmentation tables in the customer_details model.
+        data_type: varchar
+        tests:
+          - not_null
+          - unique
+
+      - name: country
+        description: The country where the customer is located.
+        data_type: varchar
+        tests:
+          - not_null
+
+      - name: last_purchase_date
+        description: This column represents the most recent purchase date for each customer. It is derived from the 'InvoiceDate' column in the 'retail_cleansed' table, with the maximum (most recent) date selected for each unique CustomerID. The data type is 'date'.
+        data_type: date
+        tests:
+          - not_null
+          
+      - name: customer_segment
+        description: This column represents the segment to which the customer belongs. It is derived from the 'customer_segmentation' table in the Retail_Analytics_dbt.DEV schema. The segmentation is based on various factors like purchase history, customer behavior, etc.
         data_type: varchar
         tests:
           - not_null

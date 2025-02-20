@@ -21,4 +21,3 @@ SELECT
         ELSE 'Low-Value'
     END AS customer_segment
 FROM customer_spend
--- ORDER BY total_spent desc # to check the highest spender
