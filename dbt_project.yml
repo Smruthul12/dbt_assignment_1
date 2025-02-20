@@ -36,7 +36,7 @@ models:
       +materialized: view
     
     intermediate:
-      +materialized: table
+      +materialized: incremental
     
     marts:
       +materialized: table

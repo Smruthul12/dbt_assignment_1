@@ -1,7 +1,9 @@
 {{
   config(
-    materialized = 'table',
-    cluster_by=['InvoiceNo']
+    materialized = 'incremental',  
+    unique_key = 'InvoiceNo',  
+    cluster_by=['InvoiceDate'], 
+    on_schema_change='sync_all_columns'
   )
 }}
 
@@ -16,7 +18,7 @@ WITH filtered_data AS (
             WHEN UnitPrice_str REGEXP '^[0-9]+(\.[0-9]+)?$' 
                  AND CAST(UnitPrice_str AS FLOAT) > 0 
             THEN CAST(UnitPrice_str AS FLOAT)
-            ELSE NULL  -- Set invalid/negative values to NULL
+            ELSE NULL  
         END AS UnitPrice,
         CustomerID,
         TRIM(UPPER(Country)) AS Country,
@@ -28,6 +30,10 @@ WITH filtered_data AS (
         AND Description IS NOT NULL 
         AND Description REGEXP '^[A-Za-z0-9 ]+$'
         AND Quantity > 0
+
+        {% if is_incremental() %}
+        AND InvoiceDate > (SELECT MAX(InvoiceDate) FROM {{ this }})  
+        {% endif %}
 )
 
 SELECT 
@@ -42,4 +48,3 @@ SELECT
 FROM filtered_data
 WHERE row_num = 1 
 AND UnitPrice IS NOT NULL
-ORDER BY InvoiceDate DESC
