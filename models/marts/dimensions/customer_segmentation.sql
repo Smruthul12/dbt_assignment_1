@@ -1,7 +1,7 @@
 {{
-  config(
-    materialized = 'table'
-  )
+    config(
+        materialized='ephemeral'
+    )
 }}
 
 WITH customer_spend AS (
