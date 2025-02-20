@@ -49,7 +49,7 @@ models:
         data_type: date
         tests:
           - not_null
-          
+
       - name: customer_segment
         description: This column represents the segment to which the customer belongs. It is derived from the 'customer_segmentation' table in the Retail_Analytics_dbt.DEV schema. The segmentation is based on various factors like purchase history, customer behavior, etc.
         data_type: varchar
@@ -60,3 +60,75 @@ models:
                 - Low-Value
                 - High-Value
                 - Medium-Value
+  - name: rfm_segmentation
+    description: The rfm_segmentation model is used to segment customers based on their purchasing behavior. It uses the RFM (Recency, Frequency, Monetary) methodology to score customers on a scale of 1 to 5 for each of the three categories. The model then segments customers into 'Best Customers', 'Loyal Customers', 'New Customers', 'At Risk Customers', 'Lost Customers', and 'Others' based on their scores. The model uses data from the retail_cleansed table in the Retail_Analytics_dbt.DEV schema.
+    columns:
+      - name: customerid
+        description: A unique identifier for each customer in the retail database.
+        data_type: varchar
+        tests:
+          - not_null
+          - unique
+
+      - name: recency
+        data_type: number
+        tests:
+          - not_null
+          - positive_values
+
+      - name: frequency
+        data_type: number
+        tests:
+          - not_null
+          - positive_values
+
+      - name: monetary_value
+        data_type: float
+        tests:
+          - not_null
+          - positive_values
+
+      - name: recency_score
+        data_type: number
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 5
+
+      - name: frequency_score
+        data_type: number
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 5
+
+      - name: monetary_score
+        data_type: number
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 5
+
+      - name: rfm_total_score
+        data_type: number
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 3
+              max_value: 15
+              
+      - name: customer_segment
+        data_type: varchar
+        tests:
+          - not_null         
+          - accepted_values:
+              values:
+                - Lost Customers
+                - Others
+                - New Customers
+                - At Risk Customers
+                - Loyal Customers
+                - Best Customers
