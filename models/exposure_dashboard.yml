@@ -1,0 +1,18 @@
+version: 2
+
+exposures:
+  - name: executive_dashboard
+    label: Executive Dashboard
+    type: dashboard
+    maturity: low
+    url: https://lookerstudio.google.com/reporting/e08f8acf-147b-4525-b3f2-c8667cf00634
+    description: Executive Dashboard about Ecommerce
+      
+
+    depends_on:
+      - ref('retail_cleansed')
+      - ref('facts_sales')
+
+    owner:
+      name: Smruthul M S
+      email: msmruthul2002@gmail.com
