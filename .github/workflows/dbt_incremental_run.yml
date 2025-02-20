@@ -28,5 +28,8 @@ jobs:
           mkdir -p ~/.dbt
           echo "${{ secrets.DBT_PROFILES }}" > ~/.dbt/profiles.yml
 
+      - name: Install DBT Dependencies  # 🛠️ Add this step
+        run: dbt deps
+        
       - name: Run dbt Incremental Models
         run: dbt run --select facts_sales
