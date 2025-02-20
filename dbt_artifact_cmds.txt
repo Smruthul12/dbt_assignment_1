@@ -1,0 +1,7 @@
+##Monitor DBT Performance with Run Artifacts
+#Find slow models :
+Get-Content target/run_results.json | ConvertFrom-Json | Select-Object -ExpandProperty results | Select-Object unique_id, execution_time
+
+
+##Filtering Slow Models (Execution > 10 seconds):
+Get-Content target/run_results.json | ConvertFrom-Json | Select-Object -ExpandProperty results | Where-Object { $_.execution_time -gt 10 } | Select-Object unique_id, execution_time
