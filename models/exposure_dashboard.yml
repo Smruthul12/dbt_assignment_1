@@ -6,12 +6,11 @@ exposures:
     type: dashboard
     maturity: low
     url: https://lookerstudio.google.com/reporting/e08f8acf-147b-4525-b3f2-c8667cf00634
-    description: Executive Dashboard about Ecommerce
+    description: Executive Dashboard about Online Retail Store
       
 
     depends_on:
       - ref('retail_cleansed')
-      - ref('facts_sales')
 
     owner:
       name: Smruthul M S
