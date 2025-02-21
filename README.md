@@ -1,19 +1,75 @@
-# DBT Retail Analytics Project
+# 🚀 Retail Analytics with dbt and Snowflake
 
-## 📌 Overview
-This **DBT project** transforms raw retail transaction data into insightful reports and dashboards using **Snowflake** as the data warehouse. The transformed data powers analytics in **Looker Studio**, providing valuable insights into sales performance, customer behavior, and product trends.
-
-## 🚀 Setup Instructions
-### **1. Prerequisites**
+## 📌 Prerequisites
 - **DBT Core** installed ([Installation Guide](https://docs.getdbt.com/docs/core/installation))
+- **VS Code && dbt Power User Extension**
 - **Snowflake** account and credentials
-- **GitHub (for version control)**
+- **Git && GitHub (for version control)**
 - **Looker Studio (for dashboarding)**
 
-### **2. Clone the Repository**
-```sh
-git clone https://github.com/your-repo/dbt-retail-analytics.git
-cd dbt-retail-analytics
+## ❄️ Snowflake Related Setup
+### 🛠️ Create an S3 Bucket and Upload CSV Files
+Refer to AWS documentation or a tutorial on how to integrate AWS S3 with Snowflake.
+
+### 🔗 Setting up AWS Integration:
+```sql
+USE WAREHOUSE ECOMMERCE_WH;
+
+CREATE OR REPLACE STORAGE INTEGRATION s3_int
+  TYPE = EXTERNAL_STAGE
+  STORAGE_PROVIDER = S3
+  ENABLED = TRUE 
+  STORAGE_AWS_ROLE_ARN = '<YOUR_AWS_ROLE>'
+  STORAGE_ALLOWED_LOCATIONS = ('s3://your-bucket/Assignment1/','s3://your-bucket/Assignment1_json/')
+  COMMENT = 'This is for assignment1 Snowflake';
+```
+
+### 🏗️ Setting Up Data:
+```sql
+CREATE DATABASE Retail_Analytics_dbt;
+USE DATABASE Retail_Analytics_dbt;
+CREATE SCHEMA ecommerce;
+
+CREATE WAREHOUSE ecommerce_wh_dbt WITH 
+    WAREHOUSE_SIZE = 'X-SMALL' 
+    AUTO_SUSPEND = 60 
+    AUTO_RESUME = TRUE;
+
+USE WAREHOUSE ecommerce_wh_dbt;
+
+CREATE OR REPLACE TABLE Retail_Analytics_dbt.ecommerce.raw_retail_data (
+    InvoiceNo STRING,
+    StockCode STRING,
+    Description STRING,
+    Quantity INTEGER,
+    InvoiceDate TIMESTAMP,
+    UnitPrice FLOAT,
+    CustomerID STRING,
+    Country STRING
+);
+```
+
+### 📤 Creating External Stage and Loading Data:
+```sql
+CREATE OR REPLACE STAGE Retail_Analytics_dbt.external_stages.csv_folder
+    URL = 's3://your-bucket/Assignment1/'
+    STORAGE_INTEGRATION = s3_int
+    FILE_FORMAT = Retail_Analytics_dbt.file_formats.csv_fileformat;
+
+COPY INTO Retail_Analytics_dbt.ecommerce.raw_retail_data
+FROM (
+    SELECT 
+        $1::STRING AS InvoiceNo,
+        $2::STRING AS StockCode,
+        $3::STRING AS Description,
+        $4::INTEGER AS Quantity,
+        TO_TIMESTAMP($5, 'MM/DD/YY HH24:MI') AS InvoiceDate, 
+        $6::FLOAT AS UnitPrice,
+        $7::STRING AS CustomerID,
+        $8::STRING AS Country
+    FROM @Retail_Analytics_dbt.external_stages.csv_folder
+    (FILE_FORMAT => Retail_Analytics_dbt.file_formats.csv_fileformat)
+);      
 ```
 
 ### **3. Configure DBT Profiles**
@@ -57,7 +113,6 @@ dbt test
 dbt docs generate && dbt docs serve
 ```
 
----
 
 ## 📂 Project Structure
 ```
@@ -82,8 +137,6 @@ dbt docs generate && dbt docs serve
 ├── README.md
 ```
 
----
-
 ## 📊 Model Descriptions
 ### **1. Staging Layer**
 - `raw_retail.sql`: Cleans raw transaction data (trims text, removes nulls, filters out invalid values).
@@ -105,32 +158,66 @@ dbt docs generate && dbt docs serve
 #### **Audit Log**
 - `audit_log.sql`: Captures DBT model execution details (run time, status, user).
 
----
+## 🚀 Running Tests and Models
+- Run all models:
+  ```sh
+  dbt run
+  ```
+- Run tests to validate transformations:
+  ```sh
+  dbt test
+  ```
+- Run a specific model:
+  ```sh
+  dbt run --select <model-name>
+  ```
+- Run incremental models:
+  ```sh
+  dbt run --full-refresh
+  ```
+
+## 🔄 Setting Up GitHub Actions for CI/CD
+To automate `dbt run` and `dbt test` on every commit:
+1. Create `.github/workflows/dbt-ci.yml` with:
+   ```yaml
+   name: dbt CI
+   on: [push, pull_request]
+
+   jobs:
+     run-dbt:
+       runs-on: ubuntu-latest
+       steps:
+         - name: Checkout Repository
+           uses: actions/checkout@v2
+         
+         - name: Set Up Python
+           uses: actions/setup-python@v2
+           with:
+             python-version: '3.8'
+         
+         - name: Install dbt
+           run: |
+             pip install dbt-snowflake
+         
+         - name: Run dbt Models
+           run: dbt run
+         
+         - name: Run dbt Tests
+           run: dbt test
+   ```
+2. **Secure your credentials**: Store sensitive values (like Snowflake credentials) in **GitHub Secrets** instead of hardcoding them.
+3. Commit and push the workflow file to trigger automated runs.
 
 ## 🔗 Integrations
 ### **1. Looker Studio Dashboard**
 - Connected Snowflake to Looker Studio for real-time analytics.
 - Includes KPI scorecards, sales trends, and customer segmentation.
 
-### **2. CI/CD with GitHub Actions**
-- Automates `dbt run` and `dbt test` on every commit.
+## 📈 Key Findings
+- Data cleansing and transformations ensure consistency and reliability.
+- Snowflake optimizations, such as clustering by `InvoiceNo`, improve query performance.
+- Integrating dbt with GitHub Actions enables automated testing and deployment.
+- Looker Studio dashboards provide actionable insights based on transformed data.
 
-### **3. Alerts & Notifications**
-- Automated alerts for **failed DBT runs** via Slack/Email.
-
----
-
-## 🚀 Future Enhancements
-🔹 Implement **Snowflake Materialized Views** for faster queries.
-🔹 Use **dbt snapshots** for historical tracking of customer data.
-🔹 Optimize incremental models for **faster DBT runs**.
-
----
-
-## 📩 Questions?
-Feel free to reach out or contribute via pull requests!
-
----
-
-#### **🔹 Made with 💡 and DBT**
+This setup ensures an efficient pipeline for analytics and reporting.
 
