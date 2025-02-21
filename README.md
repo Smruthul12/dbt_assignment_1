@@ -185,7 +185,7 @@ dbt docs generate && dbt docs serve
 ## 🔄 Setting Up GitHub Actions for CI/CD
 To automate `dbt run` and `dbt test` on every commit:
 1. Create `.github/workflows/dbt-ci.yml` with:
-   ```yaml
+```yaml
    name: "DBT CI/CD Pipeline"
 
 on:
@@ -232,7 +232,7 @@ jobs:
         run: |
           cat target/run_results.json | jq '.results[] | {model: .unique_id, time: .execution_time}'
 
-   ```
+```
 2. **Secure your credentials**: Store sensitive values (like Snowflake credentials) in **GitHub Secrets** instead of hardcoding them.
 3. Commit and push the workflow file to trigger automated runs.
 
