@@ -4,54 +4,41 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:  # Allows manual execution
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: 3.8
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
 
-    - name: Install dbt and dependencies
-      run: |
-        pip install dbt-snowflake
+      - name: Install DBT & Snowflake Adapter
+        run: |
+          pip install dbt-core dbt-snowflake
 
-    - name: Set up dbt profile
-      run: |
-        mkdir -p ~/.dbt
-        echo "
-        retail_analytics_dbt:
-          target: prod
-          outputs:
-            prod:
-              type: snowflake
-              threads: 4
-              account: ${{ secrets.DBT_SNOWFLAKE_ACCOUNT }}
-              database: Retail_Analytics_dbt
-              role: TRANSFORMER_ROLE
-              schema: ecommerce
-              warehouse: ecommerce_wh_dbt
-              user: ${{ secrets.DBT_SNOWFLAKE_USER }}
-              password: ${{ secrets.DBT_SNOWFLAKE_PASS }}
-        " > ~/.dbt/profiles.yml  
+      - name: Configure DBT Profiles
+        run: |
+          mkdir -p ~/.dbt
+          echo "${{ secrets.DBT_PROFILES }}" > ~/.dbt/profiles.yml
+          
+      - name: Verify DBT Profile
+        run: cat ~/.dbt/profiles.yml  # Debugging step to ensure the profile is correctly created
 
-    - name: Verify dbt Connection
-      run: dbt debug
-
-    - name: Install dbt dependencies
-      run: dbt deps
+      - name: Install DBT Dependencies
+        run: dbt deps
       
-    - name: Generate dbt docs
-      run: dbt docs generate
+      - name: Generate dbt docs
+        run: dbt docs generate
 
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GH_PAT }}
-        publish_dir: ./target
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GH_PAT }}
+          publish_dir: ./target
