@@ -1,0 +1,57 @@
+name: Deploy dbt docs to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.8
+
+    - name: Install dbt and dependencies
+      run: |
+        pip install dbt-snowflake
+
+    - name: Set up dbt profile
+      run: |
+        mkdir -p ~/.dbt
+        echo "
+        retail_analytics_dbt:
+          target: prod
+          outputs:
+            prod:
+              type: snowflake
+              threads: 4
+              account: ${{ secrets.DBT_SNOWFLAKE_ACCOUNT }}
+              database: Retail_Analytics_dbt
+              role: TRANSFORMER_ROLE
+              schema: ecommerce
+              warehouse: ecommerce_wh_dbt
+              user: ${{ secrets.DBT_SNOWFLAKE_USER }}
+              password: ${{ secrets.DBT_SNOWFLAKE_PASS }}
+        " > ~/.dbt/profiles.yml  
+
+    - name: Verify dbt Connection
+      run: dbt debug
+
+    - name: Install dbt dependencies
+      run: dbt deps
+      
+    - name: Generate dbt docs
+      run: dbt docs generate
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GH_PAT }}
+        publish_dir: ./target
