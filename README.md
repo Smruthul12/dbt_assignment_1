@@ -1,4 +1,4 @@
-# 🚀 Retail Analytics with dbt and Snowflake
+# 🚀 Retail Analytics with dbt core, Snowflake , Looker Studio and Github
 
 ## 📌 Prerequisites
 - **DBT Core** installed ([Installation Guide](https://docs.getdbt.com/docs/core/installation))
@@ -6,6 +6,14 @@
 - **Snowflake** account and credentials
 - **Git && GitHub (for version control)**
 - **Looker Studio (for dashboarding)**
+
+## 📥 Dataset
+### We use the Online Retail II dataset from the UCI Machine Learning Repository.
+
+Preparing the Data
+- Download the dataset from the link above.
+- Convert it to CSV format if not already in CSV.
+- Upload the CSV file to an S3 bucket before integrating it with Snowflake.
 
 ## ❄️ Snowflake Related Setup
 ### 🛠️ Create an S3 Bucket and Upload CSV Files
@@ -72,7 +80,7 @@ FROM (
 );      
 ```
 
-### **3. Configure DBT Profiles**
+## **Configure DBT**
 ### **Location of profiles.yml:**
 ```sh
 C:\Users\YourUsername\.dbt\profiles.yml
@@ -95,6 +103,7 @@ retail_analytics:
       threads: 4
       client_session_keep_alive: False
 ```
+
 ## 📂 Project Structure
 ```
 /dbt_project
@@ -118,12 +127,12 @@ retail_analytics:
 ├── README.md
 ```
 
-### **4. Install DBT Dependencies**
+### **Install DBT Dependencies**
 ```sh
 dbt deps
 ```
 
-### **5. Run DBT Models**
+### **Run DBT Models**
 ```sh
 dbt run
 ```
@@ -132,7 +141,7 @@ To run a specific model (e.g., `facts_sales`):
 dbt run --select facts_sales
 ```
 
-### **6. Test and Document Models**
+### **Test and Document Models**
 ```sh
 dbt test
 ```
@@ -163,6 +172,7 @@ dbt docs generate && dbt docs serve
 
 #### **Audit Log**
 - `audit_log.sql`: Captures DBT model execution details (run time, status, user).
+
 
 ## 🚀 Running Tests and Models
 - Run all models:
@@ -233,14 +243,17 @@ jobs:
           cat target/run_results.json | jq '.results[] | {model: .unique_id, time: .execution_time}'
 
 ```
+
 2. **Secure your credentials**: Store sensitive values (like Snowflake credentials) in **GitHub Secrets** instead of hardcoding them.
 3. Commit and push the workflow file to trigger automated runs.
+
 
 ## 🔗 Integrations
 ### **1. Looker Studio Dashboard**
 - Connected Snowflake to Looker Studio for real-time analytics.
 - Includes KPI scorecards, sales trends, and customer segmentation.
 - For exposure_dashboard replace the link with your report link =
+
 
 ## 📈 Key Findings
 - Data cleansing and transformations ensure consistency and reliability.
