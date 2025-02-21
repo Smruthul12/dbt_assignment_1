@@ -8,7 +8,7 @@
 - **Looker Studio (for dashboarding)**
 
 ## 📥 Dataset
-### We use the Online Retail II dataset from the UCI Machine Learning Repository.
+### We use the ([Online Retail II](https://archive.ics.uci.edu/dataset/502/online+retail+ii])) dataset from the UCI Machine Learning Repository.
 
 Preparing the Data
 - Download the dataset from the link above.
