@@ -73,6 +73,11 @@ FROM (
 ```
 
 ### **3. Configure DBT Profiles**
+### **Location of profiles.yml:**
+```sh
+C:\Users\YourUsername\.dbt\profiles.yml
+```
+
 Edit `profiles.yml` (usually found at `~/.dbt/profiles.yml` or in your project directory):
 ```yml
 retail_analytics:
@@ -89,6 +94,28 @@ retail_analytics:
       schema: your_schema
       threads: 4
       client_session_keep_alive: False
+```
+## 📂 Project Structure
+```
+/dbt_project
+│── models
+│   ├── staging/
+│   │   ├── raw_retail.sql  # Cleans raw data
+│   ├── intermediate/
+│   │   ├── retail_cleansed.sql  # Standardized, validated data
+│   ├── marts/
+│   │   ├── dimensions/
+│   │   │   ├── customer_details.sql
+│   │   │   ├── customer_segmentation.sql
+│   │   │   ├── rfm_segmentation.sql
+│   │   ├── facts/
+│   │   │   ├── facts_sales.sql
+│   │   │   ├── customer_rfm.sql
+│   │   │   ├── sales_performance.sql
+│   ├── audit_log.sql  # Tracks DBT model runs
+├── dbt_project.yml
+├── packages.yml
+├── README.md
 ```
 
 ### **4. Install DBT Dependencies**
@@ -114,35 +141,14 @@ dbt docs generate && dbt docs serve
 ```
 
 
-## 📂 Project Structure
-```
-/dbt_project
-│── models
-│   ├── staging/
-│   │   ├── raw_retail.sql  # Cleans raw data
-│   ├── intermediate/
-│   │   ├── retail_cleansed.sql  # Standardized, validated data
-│   ├── marts/
-│   │   ├── dimensions/
-│   │   │   ├── customer_details.sql
-│   │   │   ├── customer_segmentation.sql
-│   │   │   ├── rfm_segmentation.sql
-│   │   ├── facts/
-│   │   │   ├── facts_sales.sql
-│   │   │   ├── customer_rfm.sql
-│   │   │   ├── sales_performance.sql
-│   ├── audit_log.sql  # Tracks DBT model runs
-├── dbt_project.yml
-├── packages.yml
-├── README.md
-```
+
 
 ## 📊 Model Descriptions
 ### **1. Staging Layer**
-- `raw_retail.sql`: Cleans raw transaction data (trims text, removes nulls, filters out invalid values).
+- `raw_retail.sql`: Taking raw transaction data into a dbt model for further transformations
 
 ### **2. Intermediate Layer**
-- `retail_cleansed.sql`: Applies business rules, standardizes data, and removes duplicates.
+- `retail_cleansed.sql`: Cleaning raw_retail (trims text, removes nulls, filters out invalid values and removes duplicates).
 
 ### **3. Marts Layer**
 #### **Dimensions**
@@ -180,30 +186,52 @@ dbt docs generate && dbt docs serve
 To automate `dbt run` and `dbt test` on every commit:
 1. Create `.github/workflows/dbt-ci.yml` with:
    ```yaml
-   name: dbt CI
-   on: [push, pull_request]
+   name: "DBT CI/CD Pipeline"
 
-   jobs:
-     run-dbt:
-       runs-on: ubuntu-latest
-       steps:
-         - name: Checkout Repository
-           uses: actions/checkout@v2
-         
-         - name: Set Up Python
-           uses: actions/setup-python@v2
-           with:
-             python-version: '3.8'
-         
-         - name: Install dbt
-           run: |
-             pip install dbt-snowflake
-         
-         - name: Run dbt Models
-           run: dbt run
-         
-         - name: Run dbt Tests
-           run: dbt test
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:  # Allows manual execution
+
+jobs:
+  dbt-ci-cd:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install DBT & Snowflake Adapter
+        run: |
+          pip install dbt-core dbt-snowflake
+
+      - name: Configure DBT Profiles
+        run: |
+          mkdir -p ~/.dbt
+          echo "${{ secrets.DBT_PROFILES }}" > ~/.dbt/profiles.yml
+
+      - name: Install DBT Dependencies
+        run: dbt deps
+
+      - name: Run DBT Tests
+        run: dbt test  # Runs data quality tests
+
+      - name: Run DBT Models
+        run: dbt run --exclude tag:skip_ci  # Runs models except those tagged as skip_ci
+
+      - name: Check DBT Model Performance
+        run: |
+          cat target/run_results.json | jq '.results[] | {model: .unique_id, time: .execution_time}'
+
    ```
 2. **Secure your credentials**: Store sensitive values (like Snowflake credentials) in **GitHub Secrets** instead of hardcoding them.
 3. Commit and push the workflow file to trigger automated runs.
@@ -212,12 +240,10 @@ To automate `dbt run` and `dbt test` on every commit:
 ### **1. Looker Studio Dashboard**
 - Connected Snowflake to Looker Studio for real-time analytics.
 - Includes KPI scorecards, sales trends, and customer segmentation.
+- For exposure_dashboard replace the link with your report link =
 
 ## 📈 Key Findings
 - Data cleansing and transformations ensure consistency and reliability.
 - Snowflake optimizations, such as clustering by `InvoiceNo`, improve query performance.
 - Integrating dbt with GitHub Actions enables automated testing and deployment.
 - Looker Studio dashboards provide actionable insights based on transformed data.
-
-This setup ensures an efficient pipeline for analytics and reporting.
-
